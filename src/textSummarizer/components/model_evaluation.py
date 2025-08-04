@@ -56,14 +56,14 @@ class ModelEvaluation:
         model_pagesus = AutoModelForSeq2SeqLM.from_pretrained(self.config.model_path).to(device)
         dataset_samsum_pt = load_from_disk(self.config.data_path)
 
-        rogue_names = ["rouge1", "rouge2", "rougeL", "rougeLsum"]
-        rogue_metric = evaluate.load("rouge")
+        rouge_names = ["rouge1", "rouge2", "rougeL", "rougeLsum"]
+        rouge_metric = evaluate.load("rouge")
         
         score = self.calculate_metric_on_test_ds(
-            dataset_samsum_pt['test'][0:10], rogue_metric, model_pagesus, tokenizer, batch_size = 2, column_text = 'dialogue', column_summary= 'summary'
+            dataset_samsum_pt['test'][0:10], rouge_metric, model_pagesus, tokenizer, batch_size = 2, column_text = 'dialogue', column_summary= 'summary'
             )
         
-        rogue_dict = dict((rn, score[rn].mid.fmeasure) for rn in rogue_names)
+        rouge_dict = {rn: score[rn] for rn in rouge_names}
 
-        df = pd.DataFrame(rogue_dict, index=["pagasus"])
+        df = pd.DataFrame(rouge_dict, index=["pagasus"])
         df.to_csv(self.config.metric_file_name, index=False)
